@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Binance Futures Testnet Trading Bot
-A simplified trading bot for educational purposes using Binance Futures Testnet
+Binance Spot Testnet Trading Bot
+Modified version for spot trading using your existing API key
 """
 
 import logging
@@ -25,9 +25,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class BasicBot:
+class SpotBot:
     """
-    A basic trading bot for Binance Futures Testnet
+    A basic spot trading bot for Binance Testnet
     """
     
     def __init__(self, api_key: str, api_secret: str, testnet: bool = True):
@@ -50,11 +50,7 @@ class BasicBot:
             testnet=testnet
         )
         
-        # Set base URL for testnet
-        if testnet:
-            self.client.API_URL = 'https://testnet.binancefuture.com'
-        
-        logger.info(f"Bot initialized with testnet={testnet}")
+        logger.info(f"Spot bot initialized with testnet={testnet}")
         
     def validate_connection(self) -> bool:
         """
@@ -69,9 +65,12 @@ class BasicBot:
             logger.info(f"System status: {status}")
             
             # Get account info to validate permissions
-            account_info = self.client.futures_account()
+            account_info = self.client.get_account()
             logger.info("API connection validated successfully")
-            logger.info(f"Account balance: {account_info.get('totalWalletBalance', 'N/A')} USDT")
+            
+            # Show available balances
+            balances = [b for b in account_info['balances'] if float(b['free']) > 0]
+            logger.info(f"Available balances: {len(balances)} assets")
             
             return True
             
@@ -87,15 +86,22 @@ class BasicBot:
             dict: Account balance information
         """
         try:
-            account_info = self.client.futures_account()
-            balance_info = {
-                'total_balance': account_info.get('totalWalletBalance', '0'),
-                'available_balance': account_info.get('availableBalance', '0'),
-                'total_unrealized_pnl': account_info.get('totalUnrealizedProfit', '0')
-            }
+            account_info = self.client.get_account()
             
-            logger.info(f"Account balance retrieved: {balance_info}")
-            return balance_info
+            # Get non-zero balances
+            balances = {}
+            for balance in account_info['balances']:
+                free = float(balance['free'])
+                locked = float(balance['locked'])
+                if free > 0 or locked > 0:
+                    balances[balance['asset']] = {
+                        'free': free,
+                        'locked': locked,
+                        'total': free + locked
+                    }
+            
+            logger.info(f"Account balance retrieved: {len(balances)} assets")
+            return balances
             
         except Exception as e:
             logger.error(f"Error getting account balance: {str(e)}")
@@ -112,7 +118,7 @@ class BasicBot:
             dict: Symbol information
         """
         try:
-            exchange_info = self.client.futures_exchange_info()
+            exchange_info = self.client.get_exchange_info()
             
             for symbol_info in exchange_info['symbols']:
                 if symbol_info['symbol'] == symbol:
@@ -141,10 +147,9 @@ class BasicBot:
         try:
             logger.info(f"Placing market order: {side} {quantity} {symbol}")
             
-            order = self.client.futures_create_order(
+            order = self.client.order_market(
                 symbol=symbol,
                 side=side,
-                type='MARKET',
                 quantity=quantity
             )
             
@@ -174,13 +179,11 @@ class BasicBot:
         try:
             logger.info(f"Placing limit order: {side} {quantity} {symbol} at {price}")
             
-            order = self.client.futures_create_order(
+            order = self.client.order_limit(
                 symbol=symbol,
                 side=side,
-                type='LIMIT',
                 quantity=quantity,
-                price=price,
-                timeInForce='GTC'  # Good Till Canceled
+                price=price
             )
             
             logger.info(f"Limit order placed successfully: {order}")
@@ -196,7 +199,7 @@ class BasicBot:
     def place_stop_limit_order(self, symbol: str, side: str, quantity: float, 
                               price: float, stop_price: float) -> Dict[str, Any]:
         """
-        Place a stop-limit order (Bonus feature)
+        Place a stop-limit order
         
         Args:
             symbol: Trading symbol (e.g., 'BTCUSDT')
@@ -211,10 +214,10 @@ class BasicBot:
         try:
             logger.info(f"Placing stop-limit order: {side} {quantity} {symbol} at {price}, stop at {stop_price}")
             
-            order = self.client.futures_create_order(
+            order = self.client.create_order(
                 symbol=symbol,
                 side=side,
-                type='STOP',
+                type='STOP_LOSS_LIMIT',
                 quantity=quantity,
                 price=price,
                 stopPrice=stop_price,
@@ -243,7 +246,7 @@ class BasicBot:
             dict: Order status information
         """
         try:
-            order_status = self.client.futures_get_order(
+            order_status = self.client.get_order(
                 symbol=symbol,
                 orderId=order_id
             )
@@ -267,7 +270,7 @@ class BasicBot:
             dict: Cancel response
         """
         try:
-            result = self.client.futures_cancel_order(
+            result = self.client.cancel_order(
                 symbol=symbol,
                 orderId=order_id
             )
@@ -290,7 +293,7 @@ class BasicBot:
             float: Current price
         """
         try:
-            ticker = self.client.futures_symbol_ticker(symbol=symbol)
+            ticker = self.client.get_symbol_ticker(symbol=symbol)
             price = float(ticker['price'])
             logger.info(f"Current price for {symbol}: {price}")
             return price
@@ -304,7 +307,7 @@ def main():
     """
     Main function with command-line interface
     """
-    parser = argparse.ArgumentParser(description='Binance Futures Trading Bot')
+    parser = argparse.ArgumentParser(description='Binance Spot Trading Bot')
     parser.add_argument('--api-key', required=True, help='Binance API Key')
     parser.add_argument('--api-secret', required=True, help='Binance API Secret')
     parser.add_argument('--testnet', action='store_true', default=True, help='Use testnet (default: True)')
@@ -312,7 +315,7 @@ def main():
     args = parser.parse_args()
     
     # Initialize bot
-    bot = BasicBot(args.api_key, args.api_secret, args.testnet)
+    bot = SpotBot(args.api_key, args.api_secret, args.testnet)
     
     # Validate connection
     if not bot.validate_connection():
@@ -320,7 +323,7 @@ def main():
         sys.exit(1)
     
     # Interactive CLI
-    print("\n=== Binance Futures Trading Bot ===")
+    print("\n=== Binance Spot Trading Bot ===")
     print("Commands:")
     print("1. balance - Show account balance")
     print("2. price <symbol> - Get current price")

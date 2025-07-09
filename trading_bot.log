@@ -10,3 +10,8 @@
 2025-07-09 23:48:39,644 - __main__ - INFO - System status: {'status': 0, 'msg': 'normal'}
 2025-07-09 23:48:39,865 - __main__ - ERROR - Connection validation failed: APIError(code=-2015): Invalid API-key, IP, or permissions for action
 2025-07-09 23:48:39,865 - __main__ - ERROR - Failed to connect to Binance API. Exiting.
+2025-07-09 23:54:32,129 - __main__ - INFO - Spot bot initialized with testnet=True
+2025-07-09 23:54:32,335 - __main__ - INFO - System status: {'status': 0, 'msg': 'normal'}
+2025-07-09 23:54:32,723 - __main__ - INFO - API connection validated successfully
+2025-07-09 23:54:32,723 - __main__ - INFO - Available balances: 420 assets
+2025-07-09 23:54:39,077 - __main__ - INFO - Account balance retrieved: 420 assets
