@@ -1,0 +1,12 @@
+2025-07-09 23:43:21,625 - __main__ - INFO - Bot initialized with testnet=True
+2025-07-09 23:43:21,816 - __main__ - INFO - System status: {'status': 0, 'msg': 'normal'}
+2025-07-09 23:43:22,273 - __main__ - ERROR - Connection validation failed: APIError(code=-2015): Invalid API-key, IP, or permissions for action
+2025-07-09 23:43:22,274 - __main__ - ERROR - Failed to connect to Binance API. Exiting.
+2025-07-09 23:45:18,935 - __main__ - INFO - Bot initialized with testnet=True
+2025-07-09 23:45:19,126 - __main__ - INFO - System status: {'status': 0, 'msg': 'normal'}
+2025-07-09 23:45:19,557 - __main__ - ERROR - Connection validation failed: APIError(code=-2015): Invalid API-key, IP, or permissions for action
+2025-07-09 23:45:19,557 - __main__ - ERROR - Failed to connect to Binance API. Exiting.
+2025-07-09 23:48:39,441 - __main__ - INFO - Bot initialized with testnet=True
+2025-07-09 23:48:39,644 - __main__ - INFO - System status: {'status': 0, 'msg': 'normal'}
+2025-07-09 23:48:39,865 - __main__ - ERROR - Connection validation failed: APIError(code=-2015): Invalid API-key, IP, or permissions for action
+2025-07-09 23:48:39,865 - __main__ - ERROR - Failed to connect to Binance API. Exiting.
